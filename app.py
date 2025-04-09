@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 # Set page configuration
-st.set_page_config(layout="wide", page_title="Malaysia Census Dashboard")
+st.set_page_config(layout="wide", page_title="Landing Page HQ")
 
 # Create sample data for Malaysian states
 states = ['Selangor', 'W.P. Kuala Lumpur', 'Pulau Pinang', 'Johor', 'Pahang', 
