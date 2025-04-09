@@ -33,7 +33,7 @@ summary_metrics = {
 }
 
 # Display title
-st.title("Malaysia Census Dashboard")
+st.title("Landing Page HQ")
 
 # Create tabs for different views
 tab1, tab2, tab3 = st.tabs(["Summary", "Map View", "Graph View"])
