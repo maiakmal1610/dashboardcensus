@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import numpy as np
 
 # Set page configuration
-st.set_page_config(layout="wide", page_title="Landing Page HQ")
+st.set_page_config(layout="wide", page_title="Malaysia Census Dashboard")
 
 # Create sample data for Malaysian states
 states = ['Selangor', 'W.P. Kuala Lumpur', 'Pulau Pinang', 'Johor', 'Pahang', 
@@ -33,100 +33,112 @@ summary_metrics = {
 }
 
 # Display title
-st.title("Landing Page HQ")
+st.title("Malaysia Census Dashboard")
 
-# Create tabs for different views
-tab1, tab2, tab3 = st.tabs(["Summary", "Map View", "Graph View"])
+# Year filter (global)
+year = st.selectbox("Year", [2020, 2021, 2022, 2023])
 
-with tab1:
-    # Summary metrics in a 2x2 grid
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.metric("Blok Penghitungan", f"{summary_metrics['Blok Penghitungan']:,}")
-        st.metric("Tempat Kediaman", f"{summary_metrics['Tempat Kediaman']:,}")
-    
-    with col2:
-        st.metric("Unit Bangunan", f"{summary_metrics['Unit Bangunan']:,}")
-        st.metric("Pertubuhan Perniagaan", f"{summary_metrics['Pertubuhan Perniagaan']:,}")
+# Section 1: Summary metrics in a row
+st.subheader("Summary")
+col1, col2, col3, col4 = st.columns(4)
 
-with tab2:
-    # Map view
-    st.subheader("Map View")
+metric_icons = {
+    "Blok Penghitungan": "🏙️",
+    "Unit Bangunan": "🏢",
+    "Tempat Kediaman": "🏘️",
+    "Pertubuhan Perniagaan": "🏪"
+}
+
+with col1:
+    st.markdown(f"### {metric_icons['Blok Penghitungan']} {summary_metrics['Blok Penghitungan']:,}")
+    st.markdown("**Blok Penghitungan**")
     
-    # Create a selectbox for different metrics
-    metric_options = ["Blok Penghitungan", "Unit Bangunan", "Tempat Kediaman", "Pertubuhan Perniagaan"]
-    selected_metric = st.selectbox("Select Metric", metric_options)
+with col2:
+    st.markdown(f"### {metric_icons['Unit Bangunan']} {summary_metrics['Unit Bangunan']:,}")
+    st.markdown("**Unit Bangunan**")
     
-    # Year filter
-    year = st.selectbox("Year", [2020, 2021, 2022, 2023])
+with col3:
+    st.markdown(f"### {metric_icons['Tempat Kediaman']} {summary_metrics['Tempat Kediaman']:,}")
+    st.markdown("**Tempat Kediaman**")
     
-    # Display map (simplified for this example)
-    # In a real application, you would use actual map data for Malaysia
-    fig = px.scatter_mapbox(
-        map_data,
-        lat="lat",
-        lon="lon",
-        size="census_blocks",
-        color="census_blocks",
-        hover_name="state",
-        zoom=5,
-        mapbox_style="carto-positron",
-        title=f"Malaysia Census Data ({selected_metric})"
+with col4:
+    st.markdown(f"### {metric_icons['Pertubuhan Perniagaan']} {summary_metrics['Pertubuhan Perniagaan']:,}")
+    st.markdown("**Pertubuhan Perniagaan**")
+
+st.markdown("---")
+
+# Section 2: Map view
+st.subheader("Map View")
+
+# Create a horizontal radio button for different metrics
+metric_options = ["Blok Penghitungan", "Unit Bangunan", "Tempat Kediaman", "Pertubuhan Perniagaan"]
+selected_metric = st.radio("Select Metric", metric_options, horizontal=True)
+
+# Display map (simplified for this example)
+fig = px.scatter_mapbox(
+    map_data,
+    lat="lat",
+    lon="lon",
+    size="census_blocks",
+    color="census_blocks",
+    hover_name="state",
+    zoom=5,
+    mapbox_style="carto-positron",
+    title=f"Malaysia Census Data ({selected_metric})"
+)
+fig.update_layout(height=400)
+st.plotly_chart(fig, use_container_width=True)
+
+st.markdown("---")
+
+# Section 3: Graph view
+st.subheader("Graph View")
+
+# Create two columns for graphs
+graph_col1, graph_col2 = st.columns([3, 1])
+
+with graph_col1:
+    # Bar chart showing census blocks by state
+    selected_graph_metric = st.radio(
+        "Select metric for graph",
+        ["Blok Penghitungan", "Unit Bangunan", "Tempat Kediaman", "Pertubuhan Perniagaan"],
+        horizontal=True
     )
-    fig.update_layout(height=500)
+    
+    # Create bar chart
+    fig = px.bar(
+        x=states,
+        y=census_blocks,
+        labels={"x": "State", "y": selected_graph_metric},
+        title=f"{selected_graph_metric} by State ({year})"
+    )
+    fig.update_layout(height=400)
     st.plotly_chart(fig, use_container_width=True)
 
-with tab3:
-    # Graph view
-    st.subheader("Graph View")
+with graph_col2:
+    # Donut chart for BP Split
+    st.subheader("BP Split")
     
-    col1, col2 = st.columns([3, 1])
+    # Create options for the donut chart
+    state_options = ["Johor", "All States"]
+    selected_state = st.selectbox("Select State", state_options)
     
-    with col1:
-        # Bar chart showing census blocks by state
-        selected_tab = st.radio(
-            "Select metric",
-            ["Blok Penghitungan", "Unit Bangunan", "Tempat Kediaman", "Pertubuhan Perniagaan"],
-            horizontal=True
-        )
-        
-        year_filter = st.select_slider("Year", options=[2020, 2021, 2022, 2023])
-        
-        # Create bar chart
-        fig = px.bar(
-            x=states,
-            y=census_blocks,
-            labels={"x": "State", "y": selected_tab},
-            title=f"{selected_tab} by State ({year_filter})"
-        )
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
+    # Create donut chart
+    fig = go.Figure(go.Pie(
+        labels=["BP Split", ""],
+        values=[30, 9970],
+        hole=0.7,
+        marker_colors=['#5edbca', '#e8f4f8']
+    ))
     
-    with col2:
-        # Donut chart for BP Split
-        st.subheader("BP Split")
-        
-        # Create options for the donut chart
-        state_options = ["Johor", "All States"]
-        selected_state = st.selectbox("Select State", state_options)
-        
-        # Create donut chart
-        fig = go.Figure(go.Pie(
-            labels=["BP Split", ""],
-            values=[30, 9970],
-            hole=0.7,
-            marker_colors=['#5edbca', '#e8f4f8']
-        ))
-        
-        # Add annotation in the center
-        fig.update_layout(
-            annotations=[dict(text="0.003%", x=0.5, y=0.5, font_size=20, showarrow=False)],
-            height=300
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.caption(f"30 BP Split out of 10,000 BP for Johor in Year 2020")
+    # Add annotation in the center
+    fig.update_layout(
+        annotations=[dict(text="0.003%", x=0.5, y=0.5, font_size=20, showarrow=False)],
+        height=300
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.caption(f"30 BP Split out of 10,000 BP for {selected_state} in Year {year}")
 
 # Small footer with copyright info
 st.markdown("---")
